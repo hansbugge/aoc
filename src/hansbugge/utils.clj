@@ -24,7 +24,23 @@
    [clojure.string :as str]
    [hansbugge.utils :as utils]))
 
-(defonce input (utils/fetch-input {:year %s :day %s}))"]
+(defonce input (utils/fetch-input {:year %s :day %s}))
+(def test-input \"\")
+
+(defn part-1 [input])
+
+(comment
+  (part-1 test-input)
+  (part-1 input)
+  )
+
+(defn part-2 [input])
+
+(comment
+  (part-2 test-input)
+  (part-2 input)
+  )
+"]
     (format template year day year day)))
 
 (defn generate-day [{:keys [year day]
@@ -36,5 +52,17 @@
     (spit path (-day-content {:year year :day day}))))
 
 (comment
-  (generate-day {:year 2024 :day 1})
+  (generate-day {:year 2024 :day 2})
+  )
+
+(defn generate-today []
+  (let [today (java.time.LocalDate/now)
+        m (.getMonth today)
+        d (.getDayOfMonth today)
+        y (.getYear today)]
+    (assert (= java.time.Month/DECEMBER m))
+    (generate-day {:year y :day d})))
+
+(comment
+  (generate-today)
   )
