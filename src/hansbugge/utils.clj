@@ -16,6 +16,34 @@
 (comment
   (println (fetch-input {:year 2023 :day 1})))
 
+;;; Grid type problems
+
+(defn grid [input]
+  (into []
+        (map #(into [] %))
+        (str/split-lines input)))
+
+(def all-directions #{:n :s :e :w :ne :nw :se :sw})
+
+(defn step [[x y] direction]
+  (case direction
+    :n [(dec x) y]
+    :s [(inc x) y]
+    :e [x (inc y)]
+    :w [x (dec y)]
+    :ne [(dec x) (inc y)]
+    :nw [(dec x) (dec y)]
+    :se [(inc x) (inc y)]
+    :sw [(inc x) (dec y)]))
+
+(defn points
+  "All points in a grid, left-to-right, up-to-down."
+  [g]
+  (for [x (range (count g))
+        y (range (count (first g)))]
+    [x y]))
+
+;;; Templating
 
 (defn -day-content [{:keys [year day]
                      :or {year 2024}}]
