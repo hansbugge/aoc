@@ -42,13 +42,13 @@
         rules (->> rules
                    (map #(->> (str/split % #"\|")
                               (mapv parse-long)))
-                   (reduce (fn [acc [n1 n2]] (update acc n1 #(conj (or % #{}) n2))) {}))]
+                   (into #{}))]
     [rules updates]))
 
 (defn valid? [upd rules]
   (->> upd
        (partition 2 1)
-       (every? (fn [[n1 n2]] (not (get-in rules [n2 n1]))))))
+       (every? (fn [[n1 n2]] (not (rules [n2 n1]))))))
 
 (defn middle [upd]
   (nth upd (quot (count upd) 2)))
@@ -68,7 +68,7 @@
   )
 
 (defn fix-update [upd rules]
-  (sort (fn [n1 n2] (if (get-in rules [n1 n2]) -1 0)) upd))
+  (sort (fn [n1 n2] (if (rules [n1 n2]) -1 0)) upd))
 
 (defn part-2 [input]
   (let [[rules updates] (parse input)]
