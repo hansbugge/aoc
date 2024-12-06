@@ -3,4 +3,5 @@
 
          babashka/fs {:mvn/version "0.5.22"}
          net.cgrand/xforms {:mvn/version "0.19.6"}
-         org.babashka/http-client {:mvn/version "0.4.22"}}}
+         org.babashka/http-client {:mvn/version "0.4.22"}
+         dev.weavejester/medley {:mvn/version "1.8.1"}}}
