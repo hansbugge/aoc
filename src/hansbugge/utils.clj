@@ -48,6 +48,14 @@
         y (range (count (first g)))]
     [x y]))
 
+;;; Parallelisation helpers
+
+(defn partition-ncpus [coll]
+  (let [cnt (count coll)
+        ncpus (.availableProcessors (Runtime/getRuntime))
+        q (quot cnt ncpus)]
+    (partition-all (if (zero? (rem cnt ncpus)) q (inc q)) coll)))
+
 ;;; Templating
 
 (defn -day-content [{:keys [year day]

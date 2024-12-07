@@ -68,7 +68,7 @@
         path (walk g start-point)]
     (->> path
          (remove #{start-point})
-         (partition-all (quot (count path) parallelism))
+         utils/partition-ncpus
          (pmap (fn [batch]
                  (xf/count (comp
                             (map (fn [pnt] (walk (assoc-in g pnt \#) start-point)))

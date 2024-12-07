@@ -39,14 +39,13 @@
 (defn || [m n] (parse-long (str m n)))
 
 (defn part-2 [input]
-  (let [ns (utils/numbers input)]
-    (->> ns
-         (partition-all (max 1 (quot (count ns) 10)))
-         (pmap (fn [ms]
-                 (->> ms
-                      (keep #(valid (first %) (rest %) [+ * ||]))
-                      (apply +))))
-         (apply +))))
+  (->> (utils/numbers input)
+       utils/partition-ncpus
+       (pmap (fn [ms]
+               (->> ms
+                    (keep #(valid (first %) (rest %) [+ * ||]))
+                    (apply +))))
+       (apply +)))
 
 (comment
   (part-2 test-input)
