@@ -36,16 +36,22 @@
   ;; => 12553187650171
   )
 
+(defn || [m n] (parse-long (str m n)))
+
 (defn part-2 [input]
-  (->> (utils/numbers input)
-       (keep #(valid (first %) (rest %)
-                     [+ * (fn [m n] (parse-long (str m n)))]))
-       (apply +)))
+  (let [ns (utils/numbers input)]
+    (->> ns
+         (partition-all (max 1 (quot (count ns) 10)))
+         (pmap (fn [ms]
+                 (->> ms
+                      (keep #(valid (first %) (rest %) [+ * ||]))
+                      (apply +))))
+         (apply +))))
 
 (comment
   (part-2 test-input)
   ;; => 11387
   (time (part-2 input))
-  ;; "Elapsed time: 1472.018708 msecs"
+  ;; "Elapsed time: 254.355625 msecs"
   ;; => 96779702119491
   )

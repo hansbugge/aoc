@@ -4,6 +4,9 @@
    [medley.core :as m]
    [net.cgrand.xforms :as xf]))
 
+(set! *warn-on-reflection* true)
+(set! *unchecked-math* :warn-on-boxed)
+
 (defonce input (utils/fetch-input {:year 2024 :day 6}))
 (def test-input "....#.....
 .........#
@@ -21,12 +24,13 @@
          pnt start-point
          visited {start-point #{:n}}]
     (let [nxt (utils/step pnt (first dirs))
-          c (get-in g nxt)]
+          c (get-in g nxt)
+          dir (first dirs)]
       (cond
         (nil? c) (keys visited)
         (= \# c) (recur (rest dirs) pnt visited)
-        (get-in visited [nxt (first dirs)]) :loop
-        :else (recur dirs nxt (update visited nxt (fnil conj #{}) (first dirs)))))))
+        (get-in visited [nxt dir]) :loop
+        :else (recur dirs nxt (update visited nxt (fnil conj #{}) dir))))))
 
 (defn find-start-point [g]
   (->> (utils/points g) (m/find-first #(= \^ (get-in g %)))))
@@ -58,7 +62,7 @@
   ;; => 1909
   )
 
-(defn part-2-parallel [input parallelism]
+(defn part-2-parallel [input ^long parallelism]
   (let [g (utils/grid input)
         start-point (find-start-point g)
         path (walk g start-point)]
@@ -77,43 +81,41 @@
     (println "With paralellism:" p)
     (time (part-2-parallel input p))
     (println))
-
-  ;; With paralellism: 1
-  ;; "Elapsed time: 5836.968291 msecs"
-
-  ;; With paralellism: 2
-  ;; "Elapsed time: 3928.339333 msecs"
-
-  ;; With paralellism: 3
-  ;; "Elapsed time: 3641.7135 msecs"
-
-  ;; With paralellism: 4
-  ;; "Elapsed time: 4593.615375 msecs"
-
-  ;; With paralellism: 5
-  ;; "Elapsed time: 6241.3905 msecs"
-
-  ;; With paralellism: 6
-  ;; "Elapsed time: 6349.075708 msecs"
-
-  ;; With paralellism: 7
-  ;; "Elapsed time: 6534.937292 msecs"
-
-  ;; With paralellism: 8
-  ;; "Elapsed time: 6873.051333 msecs"
-
-  ;; With paralellism: 9
-  ;; "Elapsed time: 8583.845 msecs"
-
-  ;; With paralellism: 10
-  ;; "Elapsed time: 9164.664916 msecs"
-
-  ;; With paralellism: 11
-  ;; "Elapsed time: 8694.192875 msecs"
-
+  ;;  With paralellism: 1
+  ;;  "Elapsed time: 5921.958875 msecs"
+  ;;
+  ;;  With paralellism: 2
+  ;;  "Elapsed time: 3067.896959 msecs"
+  ;;
+  ;;  With paralellism: 3
+  ;;  "Elapsed time: 2090.957875 msecs"
+  ;;
+  ;;  With paralellism: 4
+  ;;  "Elapsed time: 1588.256625 msecs"
+  ;;
+  ;;  With paralellism: 5
+  ;;  "Elapsed time: 1285.381667 msecs"
+  ;;
+  ;;  With paralellism: 6
+  ;;  "Elapsed time: 1114.890417 msecs"
+  ;;
+  ;;  With paralellism: 7
+  ;;  "Elapsed time: 982.610959 msecs"
+  ;;
+  ;;  With paralellism: 8
+  ;;  "Elapsed time: 876.205083 msecs"
+  ;;
+  ;;  With paralellism: 9
+  ;;  "Elapsed time: 848.145708 msecs"
+  ;;
+  ;;  With paralellism: 10
+  ;;  "Elapsed time: 820.716834 msecs"
+  ;;
+  ;;  With paralellism: 11
+  ;;  "Elapsed time: 824.9345 msecs"
 
   ;; So the winner so far is:
-  (time (part-2-parallel input 3))
-  ;; "Elapsed time: 3606.533542 msecs"
+  (time (part-2-parallel input 10))
+  ;; "Elapsed time: 824.259834 msecs"
   ;; => 1909
   )

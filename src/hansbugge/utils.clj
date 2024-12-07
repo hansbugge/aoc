@@ -26,9 +26,7 @@
 ;;; Grid type problems
 
 (defn grid [input]
-  (into []
-        (map #(into [] %))
-        (str/split-lines input)))
+  (into [] (map vec) (str/split-lines input)))
 
 (def all-directions #{:n :s :e :w :ne :nw :se :sw})
 
