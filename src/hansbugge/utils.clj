@@ -4,6 +4,8 @@
    [babashka.fs :as fs]
    [clojure.string :as str]))
 
+(set! *warn-on-reflection* true)
+
 (defonce -session-cookie
   (str "session=" (-> (slurp "session.txt") str/trim)))
 
@@ -15,6 +17,11 @@
 
 (comment
   (println (fetch-input {:year 2023 :day 1})))
+
+;;; Problems with lines of integers
+(defn numbers [input]
+  (->> (str/split-lines input)
+       (map #(map parse-long (re-seq #"\d+" %)))))
 
 ;;; Grid type problems
 
@@ -51,6 +58,9 @@
   (:require
    [clojure.string :as str]
    [hansbugge.utils :as utils]))
+
+(set! *warn-on-reflection* true)
+(set! *unchecked-math* :warn-on-boxed)
 
 (defonce input (utils/fetch-input {:year %s :day %s}))
 (def test-input \"\")
