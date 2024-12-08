@@ -1,5 +1,6 @@
 (ns hansbugge.year2024.day7
   (:require
+   [clojure.math :as math]
    [hansbugge.utils :as utils]))
 
 (set! *warn-on-reflection* true)
@@ -36,7 +37,12 @@
   ;; => 12553187650171
   )
 
-(defn || [m n] (parse-long (str m n)))
+;; (defn || [m n] (parse-long (str m n))) ; simpler but slower
+
+(defn || [^long m ^long n]
+  (let [digits (-> n math/log10 long inc)]
+    (+ (* m (long (math/pow 10 digits)))
+       n)))
 
 (defn part-2 [input]
   (->> (utils/numbers input)
@@ -51,6 +57,6 @@
   (part-2 test-input)
   ;; => 11387
   (time (part-2 input))
-  ;; "Elapsed time: 254.355625 msecs"
+  ;; "Elapsed time: 226.769375 msecs"
   ;; => 96779702119491
   )

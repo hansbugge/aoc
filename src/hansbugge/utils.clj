@@ -48,6 +48,12 @@
         y (range (count (first g)))]
     [x y]))
 
+(defn within-grid? [g [x y]]
+  (let [h (count g)
+        w (count (first g))]
+    (and (< -1 x h)
+         (< -1 y w))))
+
 ;;; Parallelisation helpers
 
 (defn partition-ncpus [coll]
