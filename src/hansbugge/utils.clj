@@ -25,8 +25,19 @@
 
 ;;; Grid type problems
 
-(defn grid [input]
-  (into [] (map vec) (str/split-lines input)))
+(defn grid
+  ([input] (grid input identity))
+  ([input char-parser]
+   (into []
+         (comp
+          (map #(map char-parser %))
+          (map vec))
+         (str/split-lines input))))
+
+(comment
+  (grid "abc\ndef\nghi")
+  (grid "012\n345\n678" (comp parse-long str))
+  )
 
 (def all-directions #{:n :s :e :w :ne :nw :se :sw})
 
