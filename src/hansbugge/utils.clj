@@ -2,9 +2,11 @@
   (:require
    [babashka.http-client :as http]
    [babashka.fs :as fs]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [medley.core :as m]))
 
 (set! *warn-on-reflection* true)
+(set! *unchecked-math* :warn-on-boxed)
 
 (defonce -session-cookie
   (str "session=" (-> (slurp "session.txt") str/trim)))
@@ -41,7 +43,7 @@
 
 (def all-directions #{:n :s :e :w :ne :nw :se :sw})
 
-(defn step [[x y] direction]
+(defn step [[^long x ^long y] direction]
   (case direction
     :n [(dec x) y]
     :s [(inc x) y]
@@ -64,6 +66,49 @@
         w (count (first g))]
     (and (< -1 x h)
          (< -1 y w))))
+
+(defn flood-fill
+  "Stack based flood-fill algorithm
+
+  start-point is the origin of the search, a coordinate pair of longs.
+
+  f : State -> Point -> State is a state function taking the current state,
+  the current point deemed 'inside', and returns a new state for the remaining
+  calculation.
+
+  begin-state is the state the search begins with.
+
+  inside-pred : State -> Point -> Bool takes the current state and the current
+  point and decides whether the point is 'inside' the area to be filled.
+
+  fuel is the number of iterations to perform before giving up.
+  "
+  ([start-point f begin-state inside-pred]
+   (flood-fill start-point f begin-state inside-pred (long 1e6)))
+  ([start-point f begin-state inside-pred start-fuel]
+   (loop [stack (conj (m/queue) start-point)
+          state begin-state
+          ^long fuel start-fuel]
+     (if (zero? fuel)
+       [::out-of-fuel start-fuel stack state]
+       (if-some [point (peek stack)]
+         (if (inside-pred state point)
+           (recur (into (pop stack)
+                        (map #(step point %))
+                        [:n :e :s :w])
+                  (f state point)
+                  (dec fuel))
+           (recur (pop stack) state (dec fuel)))
+         state)))))
+
+(comment
+  (flood-fill [0 0]
+              (fn [state p] (m/update-existing-in state p (constantly :fill)))
+              [[:A :A] [:A :B]]
+              (fn [g p] (= :A (get-in g p))))
+  ;; => [[:fill :fill]
+  ;;     [:fill :B]]
+  )
 
 ;;; Parallelisation helpers
 
