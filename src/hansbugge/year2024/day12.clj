@@ -25,7 +25,6 @@ EEEC")
                                                         (map (fn [np] [p np])))]
                               (-> state
                                   (update :region conj p)
-                                  (update :area (fnil inc 0))
                                   (update :perimeter into perimeter-points))))
                           {:region #{}
                            :perimeter #{}}
@@ -35,8 +34,8 @@ EEEC")
     {:score (score-fn state)
      :region region}))
 
-(defn score-1 [{:keys [^long area perimeter]}]
-  (* (count perimeter) area))
+(defn score-1 [{:keys [perimeter region]}]
+  (* (count perimeter) (count region)))
 
 (comment
   (measure-region (utils/grid "AAB\nAAC") [0 1] score-1)
@@ -81,8 +80,8 @@ EEEC")
              (inc sides))
       sides)))
 
-(defn score-2 [{:keys [^long area perimeter]}]
-  (* (perimeter->sides perimeter) area))
+(defn score-2 [{:keys [perimeter region]}]
+  (* (perimeter->sides perimeter) (count region)))
 
 (defn part-2 [input]
   (measure-regions input score-2))
