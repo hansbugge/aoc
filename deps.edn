@@ -3,6 +3,8 @@
 
          babashka/fs {:mvn/version "0.5.22"}
          net.cgrand/xforms {:mvn/version "0.19.6"}
+         net.mikera/core.matrix {:mvn/version "0.63.0"}
+         net.mikera/vectorz-clj {:mvn/version "0.48.0"}
          org.babashka/http-client {:mvn/version "0.4.22"}
          org.clojure/math.combinatorics {:mvn/version "0.3.0"}
          dev.weavejester/medley {:mvn/version "1.8.1"}}
