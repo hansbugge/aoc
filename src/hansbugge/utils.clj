@@ -23,7 +23,7 @@
 ;;; Problems with lines of integers
 (defn numbers [input]
   (->> (str/split-lines input)
-       (map #(map parse-long (re-seq #"\d+" %)))))
+       (map #(map parse-long (re-seq #"-?\d+" %)))))
 
 ;;; Grid type problems
 

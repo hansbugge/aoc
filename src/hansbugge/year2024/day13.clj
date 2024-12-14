@@ -8,9 +8,20 @@
 (set! *warn-on-reflection* true)
 (set! *unchecked-math* :warn-on-boxed)
 
+;;; (time (dotimes [_ 1000] (part-2 input))) with different matrix representations
 (matrix/set-current-implementation :vectorz)
+;; "Elapsed time: 947.477042 msecs"
+;; (matrix/set-current-implementation :persistent-vector)
+;; "Elapsed time: 1820.573625 msecs"
+;; (matrix/set-current-implementation :ndarray)
+;; "Elapsed time: 4599.744583 msecs"
+;; (matrix/set-current-implementation :persistent-map)
+;; "Elapsed time: 10825.201708 msecs"
+;; (matrix/set-current-implementation :double-array)
+;; "Elapsed time: 75876.271834 msecs"
 
 (defonce input (utils/fetch-input {:year 2024 :day 13}))
+
 (def test-input "Button A: X+94, Y+34
 Button B: X+22, Y+67
 Prize: X=8400, Y=5400
@@ -29,18 +40,21 @@ Prize: X=18641, Y=10279")
 
 (defn parse [input]
   (->> (str/split input #"\n\n")
-       (map utils/numbers)))
+       (mapv (fn [l]
+               (let [[a1 a2 b] (utils/numbers l)]
+                 [(matrix/transpose (matrix/matrix [a1 a2]))
+                  (matrix/array b)])))))
 
 (defn check-solution [A b sol]
-  (matrix/equals b (matrix/mmul A sol)))
+  (matrix/equals (matrix/mmul A sol) b))
 
-(defn solve-eqs [[a1 a2 b]]
-  (let [A (matrix/transpose [a1 a2])]
-    (when-not (zero? ^double (matrix/det A))
-      (let [double-solution (matrix/mmul (matrix/inverse A) b)
-            int-solution (mapv math/round double-solution)]
-        (when (check-solution A b int-solution)
-          int-solution)))))
+
+(defn solve-eqs [[A b]]
+  (when-not (zero? ^double (matrix/det A))
+    (let [double-solution (matrix/mmul (matrix/inverse A) b)
+          int-solution (mapv math/round double-solution)]
+      (when (check-solution A b int-solution)
+        int-solution))))
 
 (defn price [[^long a ^long b]]
   (+ (* 3 a) b))
@@ -58,8 +72,8 @@ Prize: X=18641, Y=10279")
   ;; => 29187
   )
 
-(defn correct [[a1 a2 b]]
-  [a1 a2 (mapv #(+ 10000000000000 ^long %) b)])
+(defn correct [[A b]]
+  [A (matrix/add b [1E13 1E13])])
 
 (defn part-2 [input]
   (->> (parse input)
