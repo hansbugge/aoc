@@ -2,6 +2,7 @@
   (:require
    [babashka.http-client :as http]
    [babashka.fs :as fs]
+   [clojure.data.priority-map :refer [priority-map]]
    [clojure.string :as str]
    [medley.core :as m]))
 
@@ -63,6 +64,18 @@
    :nw :se
    :se :nw
    :sw :ne})
+
+(def clockwise
+  {:n :e
+   :e :s
+   :s :w
+   :w :n})
+
+(def counter-clockwise
+  {:n :w
+   :w :s
+   :s :e
+   :e :n})
 
 (defn points
   "All points in a grid, left-to-right, up-to-down."
@@ -126,6 +139,51 @@
       (print c))
     (prn)
     (flush)))
+
+;;; Graph
+
+(defn dijkstra
+  "Dijkstra's algorithm for connected graphs
+
+  graph is a map Node -> Set (Node x Double)
+  i.e. a map that takes a node to it's neighbors with an edge weight
+
+  source is a node
+  targets is set of nodes
+
+  Returns shortest distance from source node to one of target nodes and the
+  corresponding shortest path."
+  [graph source targets]
+  ;; q : node -> [0 if unvisited, 1 if visited; distance from start node; [previous nodes]]
+  (loop [q (priority-map source [0 0 []])]
+    (let [[u [^long visited-flag ^double distu path]] (peek q)]
+      (cond
+        ;; we have reached the target, stop
+        (targets u) [distu path]
+        ;; we have visited every node
+        (= 1 visited-flag)
+        [::dijkstra-did-not-reach-target q]
+        :else
+        (let [new-q
+              (reduce
+               (fn [q [v ^double weight]]
+                 (let [maybe-new-distv (+ distu weight)]
+                   (update q v
+                           (fn [[_ ^double distv _ :as org]]
+                             (if (or
+                                  ;; we haven't seen the node yet
+                                  (nil? distv)
+                                  ;; we have seen it, but this distance is shorter
+                                  (< maybe-new-distv distv))
+                               ;; then use the new distance
+                               [0 maybe-new-distv (conj path u)]
+                               ;; otherwise do nothing
+                               org)))))
+               q
+               (graph u))
+              ;; mark this node as visited, giving it low priority in the queue,
+              new-q (update new-q u assoc 0 1)]
+          (recur new-q))))))
 
 ;;; Parallelisation helpers
 
