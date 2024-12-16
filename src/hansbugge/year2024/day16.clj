@@ -1,7 +1,5 @@
 (ns hansbugge.year2024.day16
   (:require
-   [clojure.data.priority-map :refer [priority-map]]
-   [clojure.string :as str]
    [hansbugge.utils :as utils]
    [medley.core :as m]))
 
@@ -57,13 +55,6 @@
      :start [start :e]
      :targets (into #{} (map (fn [dir] [end dir])) [:n :s :e :w])}))
 
-
-
-(comment
-  (let [{:keys [graph start targets]} (parse test-input)]
-    (utils/dijkstra graph start targets))
-  )
-
 (defn part-1 [input]
   (let [{:keys [graph start targets]} (parse input)]
     (-> (utils/dijkstra graph start targets)
@@ -74,57 +65,21 @@
   (part-1 test-input)
   ;; => 7036
   (time (part-1 input))
-  ;; "Elapsed time: 781.976208 msecs"
+  ;; "Elapsed time: 288.6605 msecs"
   ;; => 105496
   )
-
-(defn dijkstra-alternative
-  "returns all shortest paths instead of just 1"
-  [graph source targets]
-  ;; q : node -> [how many times we've visited it; distance from start node; [previous nodes]]
-  (loop [q (priority-map source [0 0 [[]]])
-         fuel 1000000]
-    (let [[u [^long _ ^double distu paths]] (peek q)]
-      (cond
-        (zero? fuel) ::out-of-fuel
-        ;; we have reached the target
-        (targets u)
-        [distu (into [] (map #(conj % u)) paths)]
-        :else
-        (let [new-q
-              (reduce
-               (fn [q [v ^double weight]]
-                 (let [maybe-new-distv (+ distu weight)]
-                   (update q v
-                           (fn [[_ ^double distv prev-paths :as org]]
-                             (if (or
-                                  ;; we haven't seen the node yet
-                                  (nil? distv)
-                                  ;; we have seen it, but this distance is shorter
-                                  (< maybe-new-distv distv))
-                               ;; then use the new distance
-                               [0 maybe-new-distv (into [] (map #(conj % u)) paths)]
-                               (if (= maybe-new-distv distv)
-                                 [0 maybe-new-distv (into [] (map #(conj % u)) (concat prev-paths paths))]
-                                 ;; otherwise do nothing
-                                 org))))))
-               q
-               (graph u))
-              ;; mark this node as visited, giving it low priority in the queue,
-              new-q (update new-q u update 0 inc)]
-          (recur new-q (dec fuel)))))))
 
 (defn part-2 [input]
   (let [{:keys [graph start targets]} (parse input)]
     (count (into #{}
                  (comp cat (map first))
-                 (second (dijkstra-alternative graph start targets))))))
+                 (second (utils/dijkstra graph start targets))))))
 
 (comment
+
   (part-2 test-input)
   ;; => 45
-  (part-2 input)
+  (time (part-2 input))
+  ;; "Elapsed time: 284.08975 msecs"
   ;; => 524
   )
-
-(pop (priority-map :a 1 :b 0))

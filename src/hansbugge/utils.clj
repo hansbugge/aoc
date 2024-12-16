@@ -2,7 +2,7 @@
   (:require
    [babashka.http-client :as http]
    [babashka.fs :as fs]
-   [clojure.data.priority-map :refer [priority-map]]
+   [clojure.data.priority-map :refer [priority-map-keyfn]]
    [clojure.string :as str]
    [medley.core :as m]))
 
@@ -146,44 +146,55 @@
   "Dijkstra's algorithm for connected graphs
 
   graph is a map Node -> Set (Node x Double)
-  i.e. a map that takes a node to it's neighbors with an edge weight
+  i.e. a map that takes a node to its neighbors along with their edge weights
 
   source is a node
   targets is set of nodes
+  fuel is a recursion cap to avoid non-termination, default 1000000
 
-  Returns shortest distance from source node to one of target nodes and the
-  corresponding shortest path."
-  [graph source targets]
-  ;; q : node -> [0 if unvisited, 1 if visited; distance from start node; [previous nodes]]
-  (loop [q (priority-map source [0 0 []])]
-    (let [[u [^long visited-flag ^double distu path]] (peek q)]
-      (cond
-        ;; we have reached the target, stop
-        (targets u) [distu path]
-        ;; we have visited every node
-        (= 1 visited-flag)
-        [::dijkstra-did-not-reach-target q]
-        :else
-        (let [new-q
-              (reduce
-               (fn [q [v ^double weight]]
-                 (let [maybe-new-distv (+ distu weight)]
-                   (update q v
-                           (fn [[_ ^double distv _ :as org]]
-                             (if (or
-                                  ;; we haven't seen the node yet
-                                  (nil? distv)
-                                  ;; we have seen it, but this distance is shorter
-                                  (< maybe-new-distv distv))
-                               ;; then use the new distance
-                               [0 maybe-new-distv (conj path u)]
-                               ;; otherwise do nothing
-                               org)))))
-               q
-               (graph u))
-              ;; mark this node as visited, giving it low priority in the queue,
-              new-q (update new-q u assoc 0 1)]
-          (recur new-q))))))
+  Returns shortest distance from source node to one of target nodes along with
+  all the  corresponding shortest paths."
+  ([graph source targets]
+   (dijkstra graph source targets 1000000))
+  ([graph source targets ^long fuel]
+   ;; q : node -> [how many times we've visited it; distance from start node; shortest paths to node]
+   (loop [q (priority-map-keyfn (fn [v] [(first v) (second v)]) source [0 0.0 [[]]])
+          fuel fuel]
+     (let [[u [^long _ ^double distu paths]] (peek q)]
+       (cond
+         (zero? fuel) ::out-of-fuel
+         (targets u)
+         ;; we have reached the target
+         [distu (map #(conj % u) paths)]
+         :else
+         (let [new-q
+               (reduce
+                (fn [q [v weight]]
+                  (let [maybe-new-distv (+ distu (double weight))]
+                    (update q v
+                            (fn [[_ ^double distv prev-paths :as org]]
+                              (cond
+                                (or
+                                 ;; we haven't seen the node yet
+                                 (nil? distv)
+                                 ;; we have seen it, but this distance is shorter
+                                 (< maybe-new-distv distv))
+                                ;; then use the new distance
+                                [0 maybe-new-distv (map #(conj % u) paths)]
+
+                                ;; we have seen it, and the distance is equally short
+                                (= maybe-new-distv distv)
+                                ;; add all paths together
+                                [0 maybe-new-distv (map #(conj % u) (concat prev-paths paths))]
+
+                                ;; otherwise do nothing
+                                :else org)))))
+                q
+                ;; neighbors with weights of node u
+                (graph u))
+               ;; mark this node as visited, giving it lower priority in the queue,
+               new-q (update new-q u update 0 inc)]
+           (recur new-q (dec fuel))))))))
 
 ;;; Parallelisation helpers
 
