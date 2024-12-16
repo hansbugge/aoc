@@ -54,6 +54,16 @@
     :se [(inc x) (inc y)]
     :sw [(inc x) (dec y)]))
 
+(def opposite
+  {:n :s
+   :s :n
+   :e :w
+   :w :e
+   :ne :sw
+   :nw :se
+   :se :nw
+   :sw :ne})
+
 (defn points
   "All points in a grid, left-to-right, up-to-down."
   [g]
@@ -109,6 +119,13 @@
   ;; => [[:fill :fill]
   ;;     [:fill :B]]
   )
+
+(defn print-grid [g]
+  (doseq [row g]
+    (doseq [c row]
+      (print c))
+    (prn)
+    (flush)))
 
 ;;; Parallelisation helpers
 
