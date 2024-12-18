@@ -37,6 +37,11 @@
           (map vec))
          (str/split-lines input))))
 
+(defn sparse-grid
+  ([height width]
+   {:height height
+    :width width}))
+
 (comment
   (grid "abc\ndef\nghi")
   (grid "012\n345\n678" (comp parse-long str))
@@ -80,13 +85,13 @@
 (defn points
   "All points in a grid, left-to-right, up-to-down."
   [g]
-  (for [x (range (count g))
-        y (range (count (first g)))]
+  (for [x (range (or (:height g) (count g)))
+        y (range (or (:width g) (count (first g))))]
     [x y]))
 
 (defn within-grid? [g [x y]]
-  (let [h (count g)
-        w (count (first g))]
+  (let [h (or (:height g) (count g))
+        w (or (:width g) (count (first g)))]
     (and (< -1 x h)
          (< -1 y w))))
 
@@ -160,8 +165,9 @@
    ;; q : node -> [how many times we've visited it; distance from start node; shortest paths to node]
    (loop [q (priority-map-keyfn (fn [v] [(first v) (second v)]) source [0 0.0 [[]]])
           fuel fuel]
-     (let [[u [^long _ ^double distu paths]] (peek q)]
+     (let [[u [^long _visited ^double distu paths]] (peek q)]
        (cond
+         ;; (not (zero? visited)) ::failed
          (zero? fuel) ::out-of-fuel
          (targets u)
          ;; we have reached the target
@@ -211,7 +217,8 @@
   (let [template "(ns hansbugge.year%s.day%s
   (:require
    [clojure.string :as str]
-   [hansbugge.utils :as utils]))
+   [hansbugge.utils :as utils]
+   [medley.core :as m]))
 
 (set! *warn-on-reflection* true)
 (set! *unchecked-math* :warn-on-boxed)
