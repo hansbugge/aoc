@@ -95,6 +95,11 @@
     (and (< -1 x h)
          (< -1 y w))))
 
+(defn manhattan-dist ^long [p1 p2]
+  (let [[^long x1 ^long y1] p1
+        [^long x2 ^long y2] p2]
+    (+ (abs (- x1 x2)) (abs (- y1 y2)))))
+
 (defn flood-fill
   "Stack based flood-fill algorithm
 
@@ -191,7 +196,7 @@
                                 ;; we have seen it, and the distance is equally short
                                 (= maybe-new-distv distv)
                                 ;; add all paths together
-                                [0 maybe-new-distv (map #(conj % u) (concat prev-paths paths))]
+                                [0 maybe-new-distv (concat prev-paths (map #(conj % u) paths))]
 
                                 ;; otherwise do nothing
                                 :else org)))))
@@ -201,6 +206,16 @@
                ;; mark this node as visited, giving it lower priority in the queue,
                new-q (update new-q u update 0 inc)]
            (recur new-q (dec fuel))))))))
+
+(comment
+  (let [graph {:A #{[:B 1] #_[:C 1] [:a1 0.5]}
+               :a1 #{[:a2 0.5]}
+               :a2 #{[:C 0] [:E 2.0]}
+               ;; :B #{[:D 1]}
+               :C #{[:D 1]}
+               :D #{[:E 1]}}]
+    (dijkstra graph :A #{:E}))
+  )
 
 ;;; Parallelisation helpers
 

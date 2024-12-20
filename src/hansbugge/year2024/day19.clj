@@ -7,16 +7,7 @@
 (set! *unchecked-math* :warn-on-boxed)
 
 (defonce input (utils/fetch-input {:year 2024 :day 19}))
-(def test-input "r, wr, b, g, bwu, rb, gb, br
-
-brwrr
-bggr
-gbbr
-rrbgbr
-ubwu
-bwurrg
-brgr
-bbrgwb")
+(def test-input "r, wr, b, g, bwu, rb, gb, br\n\nbrwrr\nbggr\ngbbr\nrrbgbr\nubwu\nbwurrg\nbrgr\nbbrgwb")
 
 (defn parse [input]
   (let [[towels designs] (str/split input #"\n\n")]
@@ -40,7 +31,7 @@ bbrgwb")
 (comment
   (part-1 test-input)
   ;; => 6
-  (part-1 input)
+  (time (part-1 input))
   ;; => 342
   )
 
