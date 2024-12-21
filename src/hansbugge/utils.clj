@@ -207,7 +207,74 @@
                new-q (update new-q u update 0 inc)]
            (recur new-q (dec fuel))))))))
 
+(defn dijkstra*
+  "Dijkstra's algorithm for connected graphs
+
+  graph is a map Node -> Set (Map {:to Node :label any :weight Double?})
+  i.e. a map that takes a node to its neighbors along with their edge weights
+
+  source is a node
+  targets is set of nodes
+  fuel is a recursion cap to avoid non-termination, default 1000000
+
+  Returns shortest distance from source node to one of target nodes along with
+  all the  corresponding shortest paths."
+  ([graph source targets]
+   (dijkstra* graph source targets 1000000))
+  ([graph source targets ^long fuel]
+   ;; q : node -> [how many times we've visited it; distance from start node; shortest paths to node]
+   (loop [q (priority-map-keyfn (fn [v] [(first v) (second v)]) source [0 0.0 [[]]])
+          fuel fuel]
+     (let [[u [^long _visited ^double distu paths]] (peek q)]
+       (cond
+         ;; (not (zero? visited)) ::failed
+         (zero? fuel) ::out-of-fuel
+         (targets u)
+         ;; we have reached the target
+         [distu paths]
+         :else
+         (let [new-q
+               (reduce
+                (fn [q {:keys [to weight] :as edge}]
+                  (let [maybe-new-distv (+ distu (double (or weight 1.0)))]
+                    (update q to
+                            (fn [[_ ^double distv prev-paths :as org]]
+                              (cond
+                                (or
+                                 ;; we haven't seen the node yet
+                                 (nil? distv)
+                                 ;; we have seen it, but this distance is shorter
+                                 (< maybe-new-distv distv))
+                                ;; then use the new distance
+                                [0 maybe-new-distv (map #(conj % (assoc edge :from u)) paths)]
+
+                                ;; we have seen it, and the distance is equally short
+                                (= maybe-new-distv distv)
+                                ;; add all paths together
+                                [0 maybe-new-distv (concat prev-paths (map #(conj % (assoc edge :from u)) paths))]
+
+                                ;; otherwise do nothing
+                                :else org)))))
+                q
+                ;; neighbors with weights of node u
+                (graph u))
+               ;; mark this node as visited, giving it lower priority in the queue,
+               new-q (update new-q u update 0 inc)]
+           (recur new-q (dec fuel))))))))
+
 (comment
+  (let [graph {:A #{[:B 1] [:C 1]}
+               :B #{[:D 1]}
+               :C #{[:D 1]}
+               :D #{[:E 1]}}]
+    (dijkstra graph :A #{:E}))
+
+  (let [graph {:A #{{:to :B} {:to :C}}
+               :B #{{:to :D}}
+               :C #{{:to :D}}
+               :D #{{:to :E}}}]
+    (dijkstra* graph :A #{:E}))
+
   (let [graph {:A #{[:B 1] #_[:C 1] [:a1 0.5]}
                :a1 #{[:a2 0.5]}
                :a2 #{[:C 0] [:E 2.0]}
@@ -215,6 +282,18 @@
                :C #{[:D 1]}
                :D #{[:E 1]}}]
     (dijkstra graph :A #{:E}))
+  )
+
+(defn unweighted->weighted [unweighted-graph]
+  (into {}
+        (map (juxt key #(into #{} (map (fn [node] [node 1]) (val %)))))
+        unweighted-graph))
+
+(comment
+  (unweighted->weighted
+   {:A #{:B}
+    :B #{:C}})
+  ;; => {:A #{[:B 1]}, :B #{[:C 1]}}
   )
 
 ;;; Parallelisation helpers
