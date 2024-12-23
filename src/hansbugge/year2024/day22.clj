@@ -69,17 +69,16 @@
     (xf/partition 4 1)
     (map (fn [xs] [(mapv second xs) (first (nth xs 3))])))
    (completing (fn [acc [changes v]]
-                 (cond-> acc
-                   (not (contains? acc changes)) (assoc changes v))))
+                 (update acc changes #(or %1 %2) v)))
    {}
    (iterate step secret)))
 
 (defn part-2 [input]
-  (time (->> (parse input)
-             (map secret->changes-map)
-             (apply merge-with +)
-             (sort-by val #(compare %2 %1))
-             first)))
+  (->> (parse input)
+       (map secret->changes-map)
+       (apply merge-with +)
+       (sort-by val #(compare %2 %1))
+       first))
 
 (comment
   (part-2 "1\n2\n3\n2024")
