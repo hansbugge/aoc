@@ -354,6 +354,7 @@
         d (.getDayOfMonth today)
         y (.getYear today)]
     (assert (= java.time.Month/DECEMBER m))
+    (assert (<= d 25))
     (generate-day {:year y :day d})))
 
 (comment
