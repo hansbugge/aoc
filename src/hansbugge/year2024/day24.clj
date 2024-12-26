@@ -136,17 +136,34 @@
   ;;; It consists of adder components with 5 gates, taking as input
   ;;; x(n), y(n), carry(n) and giving output z(n+1), carry(n+1).
 
-  ;;; adder component:
-  ;;;
-  ;;; for x01 and y01 you have
-  ;;; x01   AND y01      -> and01
-  ;;; x01   XOR y01      -> xor01
-  ;;; cin01 XOR xor01    -> z01
-  ;;; cin01 AND xor01    -> andxor01
-  ;;; and01 OR  andxor01 -> cin02
+  ;;; Schematics for the adder components:
 
-  ;;; c01 = x00 AND y00 = nqp
-  ;;; z00 = x00 XOR y00
+  ;;                                      +--------------+
+  ;;                                      |              |
+  ;; carry_in ----------------------+-----+              |
+  ;;       +-----------+            |     |      XOR     +-------  z
+  ;;       |           |     o------.-----+              |
+  ;; x --+-+           |     |      |     |              |
+  ;;     | |    XOR    +-mxor+      |     +--------------+
+  ;; y -+.-+           |     |      |
+  ;;    || |           |     |      |     +--------------+
+  ;;    || +-----------+     |      |     |              |
+  ;;    ||                   |      +-----+              |
+  ;;    ||                   |            |      AND     +mandxor+
+  ;;    ||                   +------------+              |       |
+  ;;    ||                                |              |       |
+  ;;    ||                                +--------------+       |
+  ;;    ||                                                       |  +-----------+
+  ;;    || +-----------+                                         |  |           |
+  ;;    || |           |                                         +--+           |
+  ;;    |+-+           |                                            |    OR     +- carry_out
+  ;;    |  |    AND    +--mand--------------------------------------+           |
+  ;;    +--+           |                                            |           |
+  ;;       |           |                                            +-----------+
+  ;;       +-----------+
+
+  ;; we should have one of these components for each bit.
+
 
   ;;; we build a ripple carry adder validator and manually fix the errors:
   )
