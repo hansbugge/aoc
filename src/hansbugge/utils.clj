@@ -345,7 +345,7 @@
     (spit path (-day-content {:year year :day day}))))
 
 (comment
-  (generate-day {:year 2024 :day 2})
+  (generate-day {:year 2025 :day 2})
   )
 
 (defn generate-today []
