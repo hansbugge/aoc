@@ -2,7 +2,6 @@
   (:require
    [clojure.string :as str]
    [hansbugge.utils :as utils]
-   [medley.core :as m]
    [net.cgrand.xforms :as xf]))
 
 (set! *warn-on-reflection* true)
