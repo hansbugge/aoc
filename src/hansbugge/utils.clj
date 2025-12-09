@@ -348,7 +348,7 @@
     (spit path (-day-content {:year year :day day}))))
 
 (comment
-  (generate-day {:year 2025 :day 6})
+  (generate-day {:year 2025 :day 7})
   )
 
 (defn generate-today []
@@ -357,7 +357,8 @@
         d (.getDayOfMonth today)
         y (.getYear today)]
     (assert (= java.time.Month/DECEMBER m))
-    (assert (<= d 25))
+    (assert (or (and (< y 2025) (<= d 25))
+                (<= d 12)))
     (generate-day {:year y :day d})))
 
 (comment
