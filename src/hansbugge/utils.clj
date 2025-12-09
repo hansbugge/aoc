@@ -26,6 +26,9 @@
   (->> (str/split-lines input)
        (map #(map parse-long (re-seq #"-?\d+" %)))))
 
+(defn transpose [xss]
+  (apply mapv vector xss))
+
 ;;; Grid type problems
 
 (defn grid
@@ -345,7 +348,7 @@
     (spit path (-day-content {:year year :day day}))))
 
 (comment
-  (generate-day {:year 2025 :day 2})
+  (generate-day {:year 2025 :day 6})
   )
 
 (defn generate-today []
