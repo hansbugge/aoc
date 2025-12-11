@@ -3,6 +3,7 @@
 
          babashka/fs {:mvn/version "0.5.22"}
          com.clojure-goes-fast/clj-async-profiler {:mvn/version "1.4.0"}
+         engelberg/data.union-find {:mvn/version "1.0.0"}
          net.cgrand/xforms {:mvn/version "0.19.6"}
          net.mikera/core.matrix {:mvn/version "0.63.0"}
          net.mikera/vectorz-clj {:mvn/version "0.48.0"}
